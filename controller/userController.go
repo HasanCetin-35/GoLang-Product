@@ -34,7 +34,6 @@ func SignUp(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read user"})
 		return
 	}
-
 	// E-posta adresinin benzersiz olduğunu kontrol et
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -51,9 +50,8 @@ func SignUp(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking email availability"})
 		return
 	}
-
 	// Validasyon kontrolü yapılıyor
-	if err := validate.Struct(&user); err != nil {
+	if err := validate.Struct(user); err != nil {
 		errorFields := make([]ErrorResponse, 0)
 		for _, err := range err.(validator.ValidationErrors) {
 			element := ErrorResponse{
@@ -78,6 +76,9 @@ func SignUp(c *gin.Context) {
 	uuidWithHyphens := uuid.New().String()
 	user.ID = strings.ReplaceAll(uuidWithHyphens, "-", "")
 
+	// FoodIDs alanını boş bir dizi olarak başlatın
+	user.FoodIDs = []string{}
+
 	_, err = userCollection.InsertOne(ctx, user)
 	if err != nil {
 		log.Fatalf("Error inserting document: %v\n", err)
@@ -87,6 +88,7 @@ func SignUp(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, user)
 }
+
 func Login(c *gin.Context) {
 	var loginUser models.User
 	if err := c.BindJSON(&loginUser); err != nil {
@@ -180,3 +182,4 @@ func Deneme(c *gin.Context) {
 	c.JSON(http.StatusOK,gin.H{"user":&user})
     // Diğer user bilgileri ile yapmak istediğiniz işlemleri burada yapabilirsiniz
 }
+

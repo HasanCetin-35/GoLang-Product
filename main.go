@@ -16,10 +16,13 @@ func main() {
 	routes.FoodRoutes(router)
 	routes.ExerciseRoutes(router)
 	routes.UserRoutes((router))
+	router.Use(auth.AuthMiddleware())
+	router.POST("food/:foodID",controller.AddFoodToUser)
 	protected := router.Group("/user")
 
 	protected.Use(auth.AuthMiddleware())
 	protected.DELETE("/", controller.ProtectedEndpoint, controller.DeleteUser)
+
 	// Sunucuyu başlat"
 	router.Run(":8080")
 }

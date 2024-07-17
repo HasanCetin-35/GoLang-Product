@@ -138,3 +138,25 @@ func DeleteFood(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Document deleted successfully"})
 }
+func AddFoodToUser(c *gin.Context) {
+    foodID := c.Param("foodID")
+
+    email := c.MustGet("email").(string)
+
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+
+    // Kullanıcının food listesine foodID ekle
+    _, err := userCollection.UpdateOne(
+        ctx,
+        bson.M{"email": email},
+        bson.M{"$push": bson.M{"food_ids": foodID}},
+    )
+    if err != nil {
+        log.Fatalf("Error updating user document: %v\n", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating user document"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "Food added to user"})
+}
